@@ -24,6 +24,7 @@ public class GithubApiCrawler {
             .setUserAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
 
     final String token="?access_token=877738b0ede13b627605e301dd4f00725697ca0d";
+    final String token_cmw="?access_token=8368357f10e6318309b7e278b900e375f73421bd";
     @Resource
     private GithubDao dao;
     private Logger logger = Logger.getLogger(this.getClass());
@@ -31,7 +32,7 @@ public class GithubApiCrawler {
     public void run() {
         // 404页面也下载
         Set<Integer> set = new HashSet<Integer>();
-        set.addAll(Arrays.asList(new Integer[]{200,404,403,503}));
+        set.addAll(Arrays.asList(new Integer[]{200,404,403,503,500,502,504,400}));
         site.setAcceptStatCode(set);
         Spider.create(new PageProcessor() {
            public void process(Page page) {
@@ -50,7 +51,7 @@ public class GithubApiCrawler {
                // 更新抓取信息
                dao.updateApiInfo(githubApi);
                // 加入下一个任务
-               page.addTargetRequest(dao.getApiUrl()+token);
+               page.addTargetRequest(dao.getApiUrl()+token_cmw);
                page.putField("repo", githubApi);
                page.putField("api", page.getRawText());
 
@@ -71,7 +72,7 @@ public class GithubApiCrawler {
                }
 
            }
-       }).addUrl(dao.getApiUrl()+token).run();
+       }).addUrl(dao.getApiUrl()+token_cmw).run();
 
     }
 
