@@ -36,5 +36,14 @@ public interface GithubDao {
     @Select("select id_db from repo where url=#{url} and isdown is null limit 1")
     public int findIdbyUrl(@Param("url")String url);
 
+    @Select("select url from repo_pom where isdown is null limit 1")
+    public String getPomUrl();
 
+    @Select("select id from repo_pom where url=#{url} and isdown is null limit 1")
+    public int findIdbyPomUrl(@Param("url")String url);
+
+    @Update("update repo_pom set `has_pom`=#{has_pom},`has_libs`=#{has_libs},`url_pom`=#{url_pom},`url_libs`=#{url_libs}" +
+            ",`isdown`=#{isdown} " +
+            "where `url`=#{url}")
+    public int updatePomInfo(GithubPom pom);
 }
