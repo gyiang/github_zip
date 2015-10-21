@@ -1,12 +1,10 @@
 package net.trustie.github;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.*;
-import us.codecraft.webmagic.pipeline.Pipeline;
 import us.codecraft.webmagic.processor.PageProcessor;
 
 import javax.annotation.Resource;
@@ -18,7 +16,7 @@ import java.util.Set;
  * Created by g1a@pdl on 2015/9/29 13:56.
  */
 @Component
-public class GithubPomCrawler {
+public class GithubHasCrawler {
 
     final Site site = Site.me().setRetryTimes(2).setTimeOut(120000).setSleepTime(1000).setDomain("github.com")
             .setUserAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
@@ -38,8 +36,9 @@ public class GithubPomCrawler {
         site.setAcceptStatCode(set);
         Spider.create(new PageProcessor() {
             public void process(Page page) {
-                GithubPom githubPom=new GithubPom();
+                GithubHas githubPom=new GithubHas();
                 String repo=page.getUrl().regex("github.com/(.*)").toString();
+
                 if (page.getStatusCode() == 200) {
                     boolean flag=false;
                     if(page.getHtml().links().regex(".*/tree/master/libs?").toString()!=null){
@@ -51,44 +50,30 @@ public class GithubPomCrawler {
                         githubPom.setUrl_pom(page.getUrl().toString() + "/blob/master/pom.xml");
                     }
                     githubPom.setIsdown(1);
-                    githubPom.setUrl("https://api.github.com/repos/" + repo);
-                    dao.updatePomInfo(githubPom);
                     logger.info("save success:" + repo);
-
                 } else {
                     githubPom.setIsdown(0);
+                    System.out.println(page.getStatusCode());
                     logger.error("save failed:" + repo);
                 }
-                page.addTargetRequest(dao.getPomUrl().replace("api.", "").replace("repos/", "").toString());
+                githubPom.setUrl("https://api.github.com/repos/" + repo);
+                dao.updatePomInfo(githubPom);
+                page.addTargetRequest(dao.getPomUrl().replaceFirst("api.", "").replaceFirst("repos/", "").toString());
                 // page.putField("pom", githubPom);
                 // page.putField("curreet",url);
             }
-            public Site getSite() {
-                return site;
-            }
-        }).addPipeline(new Pipeline() {
-            public void process(ResultItems resultItems, Task task) {
-                // 将api_json持久化
-               /* GithubPom githubPom= (GithubPom) resultItems.get("pom");
-                try {
-                    dao.updatePomInfo(githubPom);
-                    logger.info("save success:" + resultItems.get("curreet"));
-                } catch (Exception ex) {
-                    logger.error("save failed:" + ex.toString());
-                }*/
-
-            }
-        }).addUrl(dao.getPomUrl().replace("api.","").replace("repos/","")).run();
+            public Site getSite() {return site;}
+        }).addUrl(dao.getPomUrl().replaceFirst("api.","").replaceFirst("repos/","")).thread(5).run();
        // }).addUrl("https://github.com/netty/netty").run();
     }
 
     public static void main(String[] args) {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
                 "classpath:/applicationContext.xml");
-        //while (true) {
-            applicationContext.getBean(GithubPomCrawler.class).run();
+        while (true) {
+            applicationContext.getBean(GithubHasCrawler.class).run();
             System.out.println("next stage!");
-       // }
+       }
 
     }
 

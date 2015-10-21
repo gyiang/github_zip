@@ -3,7 +3,7 @@ package net.trustie.github;
 /**
  * Created by g1a@pdl on 2015/10/9 16:33.
  */
-public class GithubPom {
+public class GithubHas {
     private int id;
     private String url;
     private int has_pom=0;

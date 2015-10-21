@@ -45,5 +45,22 @@ public interface GithubDao {
     @Update("update repo_pom set `has_pom`=#{has_pom},`has_libs`=#{has_libs},`url_pom`=#{url_pom},`url_libs`=#{url_libs}" +
             ",`isdown`=#{isdown} " +
             "where `url`=#{url}")
-    public int updatePomInfo(GithubPom pom);
+    public int updatePomInfo(GithubHas pom);
+
+
+    //œ¬‘ÿpom
+    @Select("select url_pom from repo_set_has_pom where isdown is null limit 1")
+    public String getOnePomUrl();
+
+    @Update("update repo_set_has_pom set `isdown`=#{isdown},`pom`=#{pom} " +
+            "where `url_pom`=#{url_pom}")
+    public int updatePom(@Param("url_pom")String url_pom,@Param("pom")String pom,@Param("isdown")int isdown);
+
+    @Insert("insert into repo_set_has_pom_html(`url_pom`,`html`) values (#{url_pom},#{html})")
+    public int insertPomHtml(@Param("url_pom")String url_pom,@Param("html")String html);
+
+
+
+
+
 }
