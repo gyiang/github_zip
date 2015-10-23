@@ -61,6 +61,17 @@ public interface GithubDao {
 
 
 
+    //œ¬‘ÿpom
+    @Select("select url_libs from repo_set_has_libs where isdown is null limit 1")
+    public String getOneLibsUrl();
+
+    @Update("update repo_set_has_libs set `isdown`=#{isdown},`libs`=#{libs} " +
+            "where `url_libs`=#{url_libs}")
+    public int updateLibs(@Param("url_libs")String url_libs,@Param("libs")String libs,@Param("isdown")int isdown);
+
+    /*@Insert("insert into repo_set_has_libs_html(`url_pom`,`html`) values (#{url_pom},#{html})")
+    public int insertPomHtml(@Param("url_pom")String url_pom,@Param("html")String html);*/
+
 
 
 }
